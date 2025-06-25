@@ -3,7 +3,7 @@ from pydantic import BaseModel
 import google.generativeai as genai
 from fastapi.middleware.cors import CORSMiddleware
 
-YOUR_API_KEY = "AIzaSyAPfBgYid6fvNggEtzD7pf6SWgls82m740"
+YOUR_API_KEY = "Enter Your Gemini API Key Here"
 genai.configure(api_key=YOUR_API_KEY)
 
 # Initialize Gemini model

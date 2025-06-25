@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Weekly Report Generator</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 40px auto;
+      padding: 20px;
+      background: #f4f4f4;
+      border-radius: 10px;
+    }
+    h1 {
+      text-align: center;
+      color: #333;
+    }
+    label {
+      font-weight: bold;
+      display: block;
+      margin-top: 15px;
+    }
+    input, textarea {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+      resize: vertical;
+    }
+    button {
+      margin-top: 20px;
+      padding: 12px 20px;
+      font-size: 16px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #45a049;
+    }
+    #report-box {
+      margin-top: 30px;
+      padding: 20px;
+      background: #fff;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      white-space: pre-wrap;
+    }
+  </style>
+</head>
+<body>
+  <h1>📝 Weekly Report Generator</h1>
+  
+  <form id="reportForm">
+    <label for="time_period">Time Period</label>
+    <input type="text" id="time_period" name="time_period" placeholder="e.g., 23/06/2025 - 27/06/2025" required/>
+
+    <label for="completed">✅ Tasks Completed</label>
+    <textarea id="completed" name="completed" rows="3" required></textarea>
+
+    <label for="ongoing">🔄 Ongoing Tasks</label>
+    <textarea id="ongoing" name="ongoing" rows="3" required></textarea>
+
+    <label for="upcoming">🗓️ Upcoming Tasks</label>
+    <textarea id="upcoming" name="upcoming" rows="3" required></textarea>
+
+    <label for="issues">⚠️ Issues Faced</label>
+    <textarea id="issues" name="issues" rows="3" required></textarea>
+
+    <button type="submit">Generate Report</button>
+  </form>
+
+  <div id="report-box" style="display:none;"></div>
+
+  <script>
+    const form = document.getElementById("reportForm");
+    const reportBox = document.getElementById("report-box");
+
+    form.addEventListener("submit", async function (e) {
+      e.preventDefault();
+
+      const formData = {
+        time_period: form.time_period.value,
+        completed: form.completed.value,
+        ongoing: form.ongoing.value,
+        upcoming: form.upcoming.value,
+        issues: form.issues.value
+      };
+
+      reportBox.style.display = "block";
+      reportBox.textContent = "⏳ Generating report...";
+
+      try {
+        const response = await fetch("http://localhost:8000/generate-report", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(formData)
+        });
+
+        const data = await response.json();
+        if (response.ok) {
+          reportBox.textContent = data.report;
+        } else {
+          reportBox.textContent = "❌ Error: " + data.detail;
+        }
+      } catch (error) {
+        reportBox.textContent = "❌ Failed to connect to the API.";
+      }
+    });
+  </script>
+</body>
+</html>

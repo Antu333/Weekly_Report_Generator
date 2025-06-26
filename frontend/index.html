@@ -171,7 +171,7 @@
       downloadPdfBtn.style.display = "none";
 
       try {
-        const response = await fetch("http://localhost:8000/generate-report", {
+        const response = await fetch("http://0.0.0.0:10000", {
           method: "POST",
           headers: {
             "Content-Type": "application/json"

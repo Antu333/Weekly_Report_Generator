@@ -33,7 +33,7 @@ class ReportRequest(BaseModel):
     issues: str
     tone: str
 
-app.mount("/static", StaticFiles(directory="frontend/static"), name="static")
+app.mount("/frontend", StaticFiles(directory="/frontend"), name="frontend")
 
 @app.get("/", response_class=FileResponse)
 def serve_home():

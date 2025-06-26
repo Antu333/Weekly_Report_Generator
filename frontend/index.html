@@ -1,9 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Weekly Report Generator</title>
+
+  <!-- jsPDF for PDF export -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -13,16 +18,20 @@
       background: #f4f4f4;
       border-radius: 10px;
     }
+
     h1 {
       text-align: center;
       color: #333;
     }
+
     label {
       font-weight: bold;
       display: block;
       margin-top: 15px;
     }
-    input, textarea {
+
+    input,
+    textarea {
       width: 100%;
       padding: 10px;
       margin-top: 5px;
@@ -30,6 +39,7 @@
       border: 1px solid #ccc;
       resize: vertical;
     }
+
     button {
       margin-top: 20px;
       padding: 12px 20px;
@@ -40,9 +50,11 @@
       border-radius: 6px;
       cursor: pointer;
     }
+
     button:hover {
       background-color: #45a049;
     }
+
     #report-box {
       margin-top: 30px;
       padding: 20px;
@@ -53,12 +65,17 @@
     }
   </style>
 </head>
+
 <body>
-  <h1>📝 Weekly Report Generator</h1>
-  
+  <h1>📝 Gemini-Powered Weekly Report Generator</h1>
+
   <form id="reportForm">
-    <label for="time_period">Time Period</label>
-    <input type="text" id="time_period" name="time_period" placeholder="e.g., 23/06/2025 - 27/06/2025" required/>
+    <label for="time_period">📅 Time Period</label>
+    <input type="text" id="time_period" name="time_period" placeholder="e.g., 23/06/2025 - 27/06/2025" required />
+
+    <label for="project_name">📌 Project Name</label>
+    <input type="text" id="project_name" name="project_name" placeholder="e.g., PPE Detection System" required />
+
 
     <label for="completed">✅ Tasks Completed</label>
     <textarea id="completed" name="completed" rows="3" required></textarea>
@@ -72,28 +89,86 @@
     <label for="issues">⚠️ Issues Faced</label>
     <textarea id="issues" name="issues" rows="3" required></textarea>
 
+    <label for="tone">🗣️ Tone of the Report</label>
+    <select id="tone" name="tone" required>
+      <option value="formal">Formal</option>
+      <option value="casual">Casual</option>
+    </select>
+
+
     <button type="submit">Generate Report</button>
   </form>
 
   <div id="report-box" style="display:none;"></div>
 
+  <!-- Buttons added via JS -->
   <script>
     const form = document.getElementById("reportForm");
     const reportBox = document.getElementById("report-box");
 
+    // Download buttons
+    const downloadTxtBtn = document.createElement("button");
+    downloadTxtBtn.textContent = "💾 Download as TXT";
+    downloadTxtBtn.style.display = "none";
+    downloadTxtBtn.style.marginTop = "20px";
+
+    const downloadPdfBtn = document.createElement("button");
+    downloadPdfBtn.textContent = "📄 Download as PDF";
+    downloadPdfBtn.style.display = "none";
+    downloadPdfBtn.style.marginTop = "20px";
+    downloadPdfBtn.style.marginLeft = "10px";
+
+    // Append to page
+    form.after(downloadTxtBtn, downloadPdfBtn);
+
+    // Handle TXT download
+    downloadTxtBtn.onclick = () => {
+      const reportText = reportBox.textContent;
+      const blob = new Blob([reportText], { type: "text/plain" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "weekly_report.txt";
+      link.click();
+      URL.revokeObjectURL(url);
+    };
+
+    // Handle PDF download
+    downloadPdfBtn.onclick = () => {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      const lines = reportBox.textContent.split('\n');
+      let y = 10;
+      lines.forEach(line => {
+        if (y > 280) {
+          doc.addPage();
+          y = 10;
+        }
+        doc.text(line, 10, y);
+        y += 10;
+      });
+      doc.save("weekly_report.pdf");
+    };
+
+    // Submit form
     form.addEventListener("submit", async function (e) {
       e.preventDefault();
 
       const formData = {
+        project_name: form.project_name.value,
         time_period: form.time_period.value,
         completed: form.completed.value,
         ongoing: form.ongoing.value,
         upcoming: form.upcoming.value,
-        issues: form.issues.value
+        issues: form.issues.value,
+        tone: form.tone.value
+
       };
 
       reportBox.style.display = "block";
       reportBox.textContent = "⏳ Generating report...";
+      downloadTxtBtn.style.display = "none";
+      downloadPdfBtn.style.display = "none";
 
       try {
         const response = await fetch("http://localhost:8000/generate-report", {
@@ -107,6 +182,8 @@
         const data = await response.json();
         if (response.ok) {
           reportBox.textContent = data.report;
+          downloadTxtBtn.style.display = "inline-block";
+          downloadPdfBtn.style.display = "inline-block";
         } else {
           reportBox.textContent = "❌ Error: " + data.detail;
         }
@@ -116,4 +193,5 @@
     });
   </script>
 </body>
+
 </html>

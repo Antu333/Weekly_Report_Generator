@@ -3,7 +3,7 @@ from pydantic import BaseModel
 import google.generativeai as genai
 from fastapi.middleware.cors import CORSMiddleware
 
-YOUR_API_KEY = "Enter Your Gemini API Key Here"
+YOUR_API_KEY = "AIzaSyAPfBgYid6fvNggEtzD7pf6SWgls82m740"
 genai.configure(api_key=YOUR_API_KEY)
 
 # Initialize Gemini model
@@ -22,18 +22,25 @@ app.add_middleware(
 
 # Pydantic model for input
 class ReportRequest(BaseModel):
+    project_name: str
     time_period: str
     completed: str
     ongoing: str
     upcoming: str
     issues: str
+    tone: str
 
 # POST endpoint
 @app.post("/generate-report")
 def generate_report(req: ReportRequest):
     try:
+        tone_instruction = (
+    "Use a friendly, slightly casual tone. Be human and conversational."
+    if req.tone == "casual"
+    else "Use a formal and professional tone suitable for corporate communication."
+)
         prompt = f"""
-You are an AI assistant writing a friendly and professional weekly status report.
+You are an AI assistant writing a friendly and professional weekly status report for the project: {req.project_name}.
 
 Write a narrative-style report for the period: {req.time_period}
 
@@ -44,11 +51,14 @@ Here are the bullet points:
 - ⚠️ Issues faced: {req.issues}
 
 Instructions:
+- Use the following tone: {tone_instruction}.
 - Make it sound like a real person wrote it.
 - Use a friendly but formal tone.
 - Break the report into 4 sections with bold headings.
 - Add light transitions between sections so it flows naturally.
 - End with a positive, forward-looking sentence.
+- Give a report summary at the end.
+- give key takeaways at the end.
 """
 
         response = model.generate_content(prompt)

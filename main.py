@@ -31,7 +31,7 @@ class ReportRequest(BaseModel):
     issues: str
     tone: str
 
-@app.get("/root")
+@app.get("/")
 def root():
     return("App is running")
 # POST endpoint

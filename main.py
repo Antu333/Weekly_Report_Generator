@@ -2,7 +2,8 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 import google.generativeai as genai
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 import os
 
 YOUR_API_KEY = os.environ.get("GEMINI_API_KEY")
@@ -32,9 +33,11 @@ class ReportRequest(BaseModel):
     issues: str
     tone: str
 
-@app.api_route("/", methods=["GET", "HEAD"])
-def read_root():
-    return JSONResponse(content={"message": "API is up and running"})
+app.mount("/static", StaticFiles(directory="frontend/static"), name="static")
+
+@app.get("/", response_class=FileResponse)
+def serve_home():
+    return FileResponse("frontend/index.html")
 # POST endpoint
 @app.post("/generate-report")
 def generate_report(req: ReportRequest):
